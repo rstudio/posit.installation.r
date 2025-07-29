@@ -45,8 +45,8 @@
 
 - name: Download R packages for {{ item }}
   get_url:
-    url: "{{ r_base_url }}/r-{{ r_version }}_1_amd64.deb"
-    dest: "/tmp/r-{{ r_version }}_1_amd64.deb"
+    url: "{{ r_base_url }}/r-{{ item }}_1_amd64.deb"
+    dest: "/tmp/r-{{ item }}_1_amd64.deb"
     mode: '0644'
   loop: "{{ all_r_versions }}"
   tags:
@@ -56,7 +56,7 @@
 
 - name: Install R for {{ item }}
   apt:
-    deb: "/tmp/r-{{ r_version }}_1_amd64.deb"
+    deb: "/tmp/r-{{ item }}_1_amd64.deb"
     state: present
   loop: "{{ all_r_versions }}"
   tags:
