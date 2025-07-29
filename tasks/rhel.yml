@@ -8,6 +8,15 @@
     - r-install
     - r-install-rhel
 
+- name: Install dnf-plugins-core
+  dnf:
+    name: dnf-plugins-core
+    state: present
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
 - name: Enable CodeReady Linux Builder repository (RHEL 8)
   command: dnf config-manager --set-enabled powertools
   when: ansible_distribution_major_version == "8"
@@ -18,7 +27,7 @@
     - r-install-repos
 
 - name: Enable CodeReady Linux Builder repository (RHEL 9)
-  command: dnf config-manager --set-enabled crb
+  command: dnf config-manager --set-enabled codeready-builder-for-rhel-9-*-rpms
   when: ansible_distribution_major_version == "9"
   changed_when: false
   tags:
