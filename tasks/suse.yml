@@ -1,0 +1,110 @@
+---
+# SUSE-specific tasks for R installation
+
+- name: Set SLES version-specific variables
+  set_fact:
+    r_base_url: "https://cdn.posit.co/r/opensuse-156/pkgs"
+  tags:
+    - r-install
+    - r-install-suse
+
+- name: Install required dependencies for SLES
+  zypper:
+    name:
+      - gcc
+      - gcc-c++
+      - gcc-fortran
+      - make
+      - curl
+      - libcurl-devel
+      - libopenssl-devel
+      - libxml2-devel
+      - fontconfig-devel
+      - harfbuzz-devel
+      - fribidi-devel
+      - freetype2-devel
+      - libpng16-devel
+      - libtiff-devel
+      - libjpeg8-devel
+      - libatlas3-devel
+      - libbz2-devel
+      - xz-devel
+      - pcre2-devel
+      - readline-devel
+      - zlib-devel
+      - cairo-devel
+      - pango-devel
+      - tcl-devel
+      - tk-devel
+      - glibc-locale
+      - glibc-locale-base
+    state: present
+  tags:
+    - r-install
+    - r-install-suse
+    - r-install-dependencies
+
+# Create list of all Python versions to install
+- name: Create list of all R versions
+  set_fact:
+    all_r_versions: "{{ [r_version] + r_version_alt }}"
+
+- name: Download R packages for {{ item }}
+  get_url:
+    url: "{{ r_base_url }}/R-{{ r_version }}-1-1.x86_64.rpm"
+    dest: "/tmp/R-{{ r_version }}-1-1.x86_64.rpm"
+    mode: '0644'
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-suse
+    - r-install-download
+
+- name: Install R for {{ item }}
+  zypper:
+    name: "/tmp/R-{{ r_version }}-1-1.x86_64.rpm"
+    state: present
+    disable_gpg_check: yes
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-suse
+    - r-install-package
+
+# Clean up downloaded packages
+- name: Clean up downloaded R for {{ item }}
+  file:
+    path: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
+    state: absent
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-package
+
+- name: Create symlinks for primary R version (add to system PATH)
+  file:
+    src: "/opt/R/{{ r_version }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - R
+    - Rscript
+  tags:
+    - r-install
+    - r-install-suse
+    - r-install-symlinks
+
+- name: Set locale environment for R
+  lineinfile:
+    path: "/etc/environment"
+    line: "{{ item }}"
+    create: yes
+  loop:
+    - "LANG=en_US.UTF-8"
+    - "LC_ALL=en_US.UTF-8"
+  tags:
+    - r-install
+    - r-install-suse
+    - r-install-locale

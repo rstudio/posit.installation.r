@@ -1,0 +1,40 @@
+---
+# tasks file for r-install role
+- name: Include Ubuntu tasks
+  include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - r-install
+    - r-install-ubuntu
+
+- name: Include RHEL/CentOS tasks
+  include_tasks: rhel.yml
+  when: 
+    - ansible_os_family == "RedHat"
+    - ansible_distribution != "Fedora"
+  tags:
+    - r-install
+    - r-install-rhel
+
+- name: Include SUSE tasks
+  include_tasks: suse.yml
+  when: ansible_os_family == "Suse"
+  tags:
+    - r-install
+    - r-install-suse
+
+- name: Verify R installation
+  command: "/opt/R/{{ r_version }}/bin/R --version"
+  register: r_version_output
+  changed_when: false
+  failed_when: false
+  tags:
+    - r-install
+    - r-install-verify
+
+- name: Display R version
+  debug:
+    msg: "R {{ r_version }} installation status: {{ 'SUCCESS' if r_version_output.rc == 0 else 'FAILED' }}"
+  tags:
+    - r-install
+    - r-install-verify

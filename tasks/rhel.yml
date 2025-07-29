@@ -1,0 +1,122 @@
+---
+# RHEL-specific tasks for R installation
+
+- name: Set RHEL version-specific variables
+  set_fact:
+    r_base_url: "{% if ansible_distribution_major_version == '8' %}https://cdn.rstudio.com/r/centos-8/pkgs{% elif ansible_distribution_major_version == '9' %}https://cdn.rstudio.com/r/rhel-9/pkgs{% endif %}"
+  tags:
+    - r-install
+    - r-install-rhel
+
+- name: Enable EPEL repository
+  yum:
+    name: epel-release
+    state: present
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
+- name: Enable CodeReady Linux Builder repository (RHEL 8)
+  command: dnf config-manager --set-enabled powertools
+  when: ansible_distribution_major_version == "8"
+  changed_when: false
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
+- name: Enable CodeReady Linux Builder repository (RHEL 9)
+  command: dnf config-manager --set-enabled crb
+  when: ansible_distribution_major_version == "9"
+  changed_when: false
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
+- name: Install required dependencies for RHEL
+  yum:
+    name:
+      - gcc
+      - gcc-c++
+      - gcc-gfortran
+      - make
+      - curl
+      - libcurl-devel
+      - openssl-devel
+      - libxml2-devel
+      - fontconfig-devel
+      - harfbuzz-devel
+      - fribidi-devel
+      - freetype-devel
+      - libpng-devel
+      - libtiff-devel
+      - libjpeg-devel
+      - atlas-devel
+      - bzip2-devel
+      - xz-devel
+      - pcre2-devel
+      - readline-devel
+      - zlib-devel
+      - cairo-devel
+      - pango-devel
+      - tcl-devel
+      - tk-devel
+    state: present
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-dependencies
+
+# Create list of all Python versions to install
+- name: Create list of all R versions
+  set_fact:
+    all_r_versions: "{{ [r_version] + r_version_alt }}"
+
+- name: Download R packages for {{ item }}
+  get_url:
+    url: "{{ r_base_url }}/R-{{ item }}-1-1.x86_64.rpm"
+    dest: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
+    mode: '0644'
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-download
+
+- name: Install R for {{ item }}
+  yum:
+    name: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
+    state: present
+    disable_gpg_check: yes
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-package
+
+# Clean up downloaded packages
+- name: Clean up downloaded R for {{ item }}
+  file:
+    path: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
+    state: absent
+  loop: "{{ all_r_versions }}"
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-package
+
+- name: Create symlinks for primary R version (add to system PATH)
+  file:
+    src: "/opt/R/{{ r_version }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - R
+    - Rscript
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-symlinks
