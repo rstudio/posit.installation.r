@@ -8,15 +8,6 @@
     - r-install
     - r-install-rhel
 
-- name: Enable EPEL repository
-  yum:
-    name: epel-release
-    state: present
-  tags:
-    - r-install
-    - r-install-rhel
-    - r-install-repos
-
 - name: Enable CodeReady Linux Builder repository (RHEL 8)
   command: dnf config-manager --set-enabled powertools
   when: ansible_distribution_major_version == "8"
@@ -30,6 +21,26 @@
   command: dnf config-manager --set-enabled crb
   when: ansible_distribution_major_version == "9"
   changed_when: false
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
+- name: Enable EPEL repository for RHEL8
+  dnf:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm   
+    state: present
+  when: ansible_distribution_major_version == "8"
+  tags:
+    - r-install
+    - r-install-rhel
+    - r-install-repos
+
+- name: Enable EPEL repository for RHEL9
+  dnf:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    state: present
+  when: ansible_distribution_major_version == "9"
   tags:
     - r-install
     - r-install-rhel
