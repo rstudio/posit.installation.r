@@ -3,7 +3,7 @@
 
 - name: Set distribution include file fact
   set_fact:
-    linux_distro: "{% if ansible_distribution == 'Ubuntu' %}ubuntu.yml{% elif ansible_os_family == 'RedHat' %}rhel.yml{% elif ansible_os_family == 'Suse' %}suse.yml{% endif %}"
+    linux_distro: "{% if ansible_distribution == 'Ubuntu' %}ubuntu.yml{% elif ansible_os_family == 'RedHat' and ansible_distribution != 'Fedora' %}rhel.yml{% elif ansible_os_family == 'Suse' %}suse.yml{% endif %}"
   tags:
     - r-install
 
@@ -15,14 +15,6 @@
   include_tasks: "{{ linux_distro }}"
   tags:
     - r-install
-
-#- name: Include RHEL/CentOS tasks
-#  include_tasks: rhel.yml
-#  when: 
-#    - ansible_os_family == "RedHat"
-#    - ansible_distribution != "Fedora"
-#  tags:
-#    - r-install
 
 - name: Verify R installation
   command: "/opt/R/{{ r_version }}/bin/R --version"
