@@ -7,7 +7,7 @@
   tags:
     - r-install
 
-- name: "Download R packages for {{ item }}"
+- name: "Download R packages for Ubuntu {{ansible_distribution_version }}"
   get_url:
     url: "{{ r_base_url }}/r-{{ item }}_1_amd64.deb"
     dest: "/tmp/r-{{ item }}_1_amd64.deb"
@@ -16,7 +16,7 @@
   tags:
     - r-install
 
-- name: "Install R for {{ item }}"
+- name: "Install R for Ubuntu {{ansible_distribution_version }}"
   apt:
     deb: "/tmp/r-{{ item }}_1_amd64.deb"
     state: present
@@ -24,7 +24,7 @@
   tags:
     - r-install
 
-- name: "Clean up downloaded R for {{ item }}"
+- name: "Clean up downloaded R for Ubuntu {{ansible_distribution_version }}"
   file:
     path: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
     state: absent

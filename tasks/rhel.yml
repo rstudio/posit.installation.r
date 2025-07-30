@@ -29,7 +29,7 @@
   tags:
     - r-install
 
-- name: "Download R packages for {{ item }}"
+- name: "Download R packages for RHEL{{ ansible_distribution_major_version }}"
   get_url:
     url: "{{ r_base_url }}/R-{{ item }}-1-1.x86_64.rpm"
     dest: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
@@ -38,7 +38,7 @@
   tags:
     - r-install
 
-- name: "Install R for {{ item }}"
+- name: "Install R for RHEL{{ ansible_distribution_major_version }}"
   yum:
     name: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
     state: present
@@ -48,7 +48,7 @@
     - r-install
 
 # Clean up downloaded packages
-- name: "Clean up downloaded R for {{ item }}"
+- name: "Clean up downloaded R for RHEL{{ ansible_distribution_major_version }}"
   file:
     path: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
     state: absent
