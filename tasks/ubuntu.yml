@@ -6,44 +6,8 @@
     r_base_url: "{% if ansible_distribution_version == '22.04' %}https://cdn.rstudio.com/r/ubuntu-2204/pkgs{% elif ansible_distribution_version == '24.04' %}https://cdn.rstudio.com/r/ubuntu-2404/pkgs{% endif %}"
   tags:
     - r-install
-    - r-install-ubuntu
 
-- name: Install required dependencies for Ubuntu
-  apt:
-    name:
-      - gdebi-core
-      - curl
-      - libcurl4-openssl-dev
-      - libssl-dev
-      - libxml2-dev
-      - libfontconfig1-dev
-      - libharfbuzz-dev
-      - libfribidi-dev
-      - libfreetype6-dev
-      - libpng-dev
-      - libtiff5-dev
-      - libjpeg-dev
-      - build-essential
-      - gfortran
-      - libatlas-base-dev
-      - libbz2-dev
-      - liblzma-dev
-      - libpcre2-dev
-      - libreadline-dev
-      - zlib1g-dev
-    state: present
-    update_cache: yes
-  tags:
-    - r-install
-    - r-install-ubuntu
-    - r-install-dependencies
-
-# Create list of all Python versions to install
-- name: Create list of all R versions
-  set_fact:
-    all_r_versions: "{{ [r_version] + r_version_alt }}"
-
-- name: Download R packages for {{ item }}
+- name: "Download R packages for {{ item }}"
   get_url:
     url: "{{ r_base_url }}/r-{{ item }}_1_amd64.deb"
     dest: "/tmp/r-{{ item }}_1_amd64.deb"
@@ -51,29 +15,22 @@
   loop: "{{ all_r_versions }}"
   tags:
     - r-install
-    - r-install-ubuntu
-    - r-install-download
 
-- name: Install R for {{ item }}
+- name: "Install R for {{ item }}"
   apt:
     deb: "/tmp/r-{{ item }}_1_amd64.deb"
     state: present
   loop: "{{ all_r_versions }}"
   tags:
     - r-install
-    - r-install-ubuntu
-    - r-install-package
 
-# Clean up downloaded packages
-- name: Clean up downloaded R for {{ item }}
+- name: "Clean up downloaded R for {{ item }}"
   file:
     path: "/tmp/R-{{ item }}-1-1.x86_64.rpm"
     state: absent
   loop: "{{ all_r_versions }}"
   tags:
     - r-install
-    - r-install-rhel
-    - r-install-package
 
 - name: Create symlinks for primary R version (add to system PATH)
   file:
@@ -86,5 +43,3 @@
     - Rscript
   tags:
     - r-install
-    - r-install-ubuntu
-    - r-install-symlinks
